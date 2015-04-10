@@ -20,6 +20,8 @@
     "Goh-lee!"
     "Did you say arse lick?"
     "Mol!"
+    "Tidy up! Come on!"
+    "How's your maths?"
     "Col!"
     "Jimm-eh!"
     "Who's Rizz?"
@@ -27,6 +29,7 @@
 
 (def user-name "@U04B4FE2Y")
 (def nick-names ["poppo" "rick" "p-rick" "ricky" "mark wigg"])
+(def foods ["chocolate" "licorice" "chipth"])
 (def token (System/getenv "TOKEN")) ;; => https://trapslinger.slack.com/services/4345477538?icon=1
 (def start-url (str "https://slack.com/api/rtm.start?token=" token))
 
@@ -46,16 +49,19 @@
 
 (def slack-channels (:channels (slack-start-info))) 
 
-(defn- mentioned[text what]
+(defn- mentioned?[text what]
   (if (clojure.string/blank? text) false (.contains (.toLowerCase text) (.toLowerCase what))))
 
-(defn- mentioned-me[msg]
+(defn- mentioned-me?[msg]
   (or
-   (mentioned (:text msg) user-name) 
-   (some #(mentioned (:text msg) %) nick-names)))
+   (mentioned? (:text msg) user-name) 
+   (some #(mentioned? (:text msg) %) nick-names)))
 
-(defn- mentioned-chocolate[msg]
-  (mentioned (:text msg) "chocolate"))
+(defn- mentioned-food?[msg]
+  (some #(mentioned? (:text msg) %) foods))
+
+(defn- which-food?[msg]
+  (first (filter #(mentioned? (:text msg) %) foods)))
 
 (defn- message?[msg]
   (let [type (:type msg)]
@@ -75,11 +81,11 @@
   (prn text))
 
 (defn- reply[to]
-  (when (or (mentioned-me to) (dm? to))
+  (when (or (mentioned-me? to) (dm? to))
     (reply-with (:channel to) (rand-nth replies)))
 
-  (when (mentioned-chocolate to)
-    (reply-with (:channel to) "Did someone say chocolate?")))
+  (when (mentioned-food? to)
+    (reply-with (:channel to) (str "Did someone say " (which-food? to) "?"))))
 
 (defn- listen[message]
   (prn 'message! message)
