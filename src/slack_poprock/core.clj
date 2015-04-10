@@ -26,6 +26,7 @@
     "Baby baby baby, light my way"
     "Jimm-eh!"
     "Who's Rizz?"
+    "Hudddddrrrrrrr"
     "Joss-ette!"])
 
 (def user-name  "@U04B4FE2Y")
@@ -45,6 +46,7 @@
 (def c @(connect-to (slack-start-url)))
 (def slack-channels (:channels (slack-start-info))) 
 (defn- deserialize[what] (json/read-str what :key-fn keyword))
+(defn- now [] (new java.util.Date))
 
 (defn- mentioned?[text what]
   (and 
@@ -72,16 +74,13 @@
      (message? msg) 
      (if (nil? channel) false (= "D04B4FE3E" channel)))))
 
-(defn- send[what]
-  (s/put! c (json/write-str (merge {:id (next-id)} what))))
-
-(defn- now [] (new java.util.Date))
-
 (defn- i[msg] (println (format "[%s] %s" (now) msg))) 
 
-(defn- reply-with[channel,text]
-  (send {:type "message" :channel channel :text text})
-  (i text))
+(defn- send[what]
+  (i (format ">>> %s" what))
+  (s/put! c (json/write-str (merge {:id (next-id)} what))))
+
+(defn- reply-with[channel,text] (send {:type "message" :channel channel :text text}))
 
 (defn- reply[to]
   (when (or (mentioned-me? to) (dm? to))
@@ -92,7 +91,7 @@
 
 (defn- listen[text]
   (let [msg (deserialize text)] 
-    (i msg)
+    (i (format "<<< %s" msg))
     (reply msg)))
 
 (defn start[] (s/consume listen c))
@@ -101,12 +100,11 @@
 
 (defn -main 
   [& args]
-  (printf "Starting Slack Poprock with args: <%s>" args)
+  (println (format "Starting Slack Poprock with args: <%s>" (if (nil? args) "none" args)))
   (start)
   (while true
     (Thread/sleep (* 45 1000))
-    (ping)
-    (i (str"Connected?:" (if-not (s/closed? c) "YES" "NO")))))
+    (ping)))
 
 ;; Realtime API => https://api.slack.com/rtm
-;; Emoticons -> http://www.emoji-cheat-sheet.com/
+;; Emoticons    => http://www.emoji-cheat-sheet.com/
