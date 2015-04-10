@@ -1,7 +1,6 @@
 (ns slack-poprock.core
-  (:gen-class)
-  (:require [clojure.test :refer :all]
-            [clojure.data.json :as json]
+  (:gen-class) 
+  (:require [clojure.data.json :as json]
             [manifold.stream :as s]))
 
 (require '[aleph.http :as http])
@@ -23,15 +22,17 @@
     "Tidy up! Come on!"
     "How's your maths?"
     "Col!"
+    "Bla bla bla, see you later guys"
+    "Baby baby baby, light my way"
     "Jimm-eh!"
     "Who's Rizz?"
     "Joss-ette!"])
 
-(def user-name "@U04B4FE2Y")
+(def user-name  "@U04B4FE2Y")
 (def nick-names ["poppo" "rick" "p-rick" "ricky" "mark wigg"])
-(def foods ["chocolate" "licorice" "chipth"])
-(def token (System/getenv "TOKEN")) ;; => https://trapslinger.slack.com/services/4345477538?icon=1
-(def start-url (str "https://slack.com/api/rtm.start?token=" token))
+(def foods      ["chocolate" "licorice" "chipth"])
+(def token      (System/getenv "TOKEN")) ;; => https://trapslinger.slack.com/services/4345477538?icon=1
+(def start-url  (str "https://slack.com/api/rtm.start?token=" token))
 
 (def current-message-id (atom 0))
 (defn- next-id[] (swap! current-message-id inc))
@@ -39,18 +40,16 @@
 (defn- slack-start-info[]
   (json/read-str (:body (client/get start-url)) :key-fn keyword))
 
-(defn- slack-start-url[]
-  (let [all (slack-start-info)]
-    (:url all)))
-
+(defn- slack-start-url[] (:url (slack-start-info)))
 (defn- connect-to[url] (aleph.http/websocket-client url))
-
 (def c @(connect-to (slack-start-url)))
-
 (def slack-channels (:channels (slack-start-info))) 
+(defn- deserialize[what] (json/read-str what :key-fn keyword))
 
 (defn- mentioned?[text what]
-  (if (clojure.string/blank? text) false (.contains (.toLowerCase text) (.toLowerCase what))))
+  (and 
+   (not (clojure.string/blank? text)) 
+   (.contains (.toLowerCase text) (.toLowerCase what))))
 
 (defn- mentioned-me?[msg]
   (or
@@ -76,9 +75,13 @@
 (defn- send[what]
   (s/put! c (json/write-str (merge {:id (next-id)} what))))
 
+(defn- now [] (new java.util.Date))
+
+(defn- i[msg] (println (format "[%s] %s" (now) msg))) 
+
 (defn- reply-with[channel,text]
   (send {:type "message" :channel channel :text text})
-  (prn text))
+  (i text))
 
 (defn- reply[to]
   (when (or (mentioned-me? to) (dm? to))
@@ -87,25 +90,23 @@
   (when (mentioned-food? to)
     (reply-with (:channel to) (str "Did someone say " (which-food? to) "?"))))
 
-(defn- listen[message]
-  (prn 'message! message)
-  (reply (json/read-str message :key-fn keyword)))
+(defn- listen[text]
+  (let [msg (deserialize text)] 
+    (i msg)
+    (reply msg)))
 
 (defn start[] (s/consume listen c))
 
-(defn- now [] (new java.util.Date))
+(defn- ping[] (send { :type "ping" })) ;; https://api.slack.com/rtm
 
-(defn- ping[] ;; https://api.slack.com/rtm
-  (send { :type "ping" }))
-
-(defn -main
+(defn -main 
   [& args]
-  (println "Starting Slack Poprock with args: " args)
+  (printf "Starting Slack Poprock with args: <%s>" args)
   (start)
   (while true
-    (Thread/sleep (* 30 1000))
+    (Thread/sleep (* 45 1000))
     (ping)
-    (println "[" (str(now)) "] Connected?:" (if-not (s/closed? c) "YES" "NO"))))
+    (i (str"Connected?:" (if-not (s/closed? c) "YES" "NO")))))
 
 ;; Realtime API => https://api.slack.com/rtm
 ;; Emoticons -> http://www.emoji-cheat-sheet.com/
