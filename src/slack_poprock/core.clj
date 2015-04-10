@@ -18,12 +18,15 @@
     "Who's farting? :boom:"
     "Crikey dick!"
     "Goh-lee!"
+    "Did you say arse lick?"
     "Mol!"
     "Col!"
+    "Jimm-eh!"
+    "Who's Rizz?"
     "Joss-ette!"])
 
 (def user-name "@U04B4FE2Y")
-(def nick-name "poppo")
+(def nick-names ["poppo" "rick" "p-rick" "ricky" "mark wigg"])
 (def token (System/getenv "TOKEN")) ;; => https://trapslinger.slack.com/services/4345477538?icon=1
 (def start-url (str "https://slack.com/api/rtm.start?token=" token))
 
@@ -43,11 +46,13 @@
 
 (def slack-channels (:channels (slack-start-info))) 
 
-(defn- mentioned[text,what]
+(defn- mentioned[text what]
   (if (clojure.string/blank? text) false (.contains (.toLowerCase text) (.toLowerCase what))))
 
 (defn- mentioned-me[msg]
-  (or (mentioned (:text msg) user-name) (mentioned (:text msg) nick-name)))
+  (or
+   (mentioned (:text msg) user-name) 
+   (some #(mentioned (:text msg) %) nick-names)))
 
 (defn- mentioned-chocolate[msg]
   (mentioned (:text msg) "chocolate"))
