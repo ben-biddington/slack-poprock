@@ -10,7 +10,8 @@
 (def replies
   [
     "Heck Mandy!"
-    "Ma balls!" 
+    "Ma balls!"
+    "Timm-o!"
     "Mate! I've just had a shower!"
     "Rotten dog! :dog:"
     "Chuck it on the fire! :fire:"
@@ -50,12 +51,20 @@
 (defn- mentioned-chocolate[msg]
   (mentioned (:text msg) "chocolate"))
 
+(defn- message?[msg]
+  (let [type (:type msg)]
+    (if (nil? type) false (= "message" msg))))
+
+(defn- dm?[msg]
+  (let [channel (:channel msg)]
+    (and (message? msg) (if (nil? channel) false (= "D04B4FE3E" channel)))))
+
 (defn- reply-with[channel,text]
   (streams/put! c (json/write-str {:id 1 :type "message" :channel channel :text text}))
   (prn text))
 
 (defn- reply[to]
-  (when (mentioned-me to)
+  (when (or (mentioned-me to) (dm? to))
     (reply-with (:channel to) (rand-nth replies)))
 
   (when (mentioned-chocolate to)
