@@ -2,7 +2,7 @@
   (:gen-class)
   (:require [clojure.test :refer :all]
             [clojure.data.json :as json]
-            [manifold.stream :as streams]))
+            [manifold.stream :as s]))
 
 (require '[aleph.http :as http])
 (require '[clj-http.client :as client])
@@ -27,6 +27,9 @@
 (def token (System/getenv "TOKEN")) ;; => https://trapslinger.slack.com/services/4345477538?icon=1
 (def start-url (str "https://slack.com/api/rtm.start?token=" token))
 
+(def current-message-id (atom 0))
+(defn- next-id[] (swap! current-message-id inc))
+
 (defn- slack-start-info[]
   (json/read-str (:body (client/get start-url)) :key-fn keyword))
 
@@ -38,12 +41,10 @@
 
 (def c @(connect-to (slack-start-url)))
 
-(def slack-channels
-  (let [all (slack-start-info)]
-    (:channels all))) 
+(def slack-channels (:channels (slack-start-info))) 
 
 (defn- mentioned[text,what]
-  (if (clojure.string/blank? text) false (.contains text what)))
+  (if (clojure.string/blank? text) false (.contains (.toLowerCase text) (.toLowerCase what))))
 
 (defn- mentioned-me[msg]
   (or (mentioned (:text msg) user-name) (mentioned (:text msg) nick-name)))
@@ -53,14 +54,19 @@
 
 (defn- message?[msg]
   (let [type (:type msg)]
-    (if (nil? type) false (= "message" msg))))
+    (if (nil? type) false (= "message" type))))
 
 (defn- dm?[msg]
   (let [channel (:channel msg)]
-    (and (message? msg) (if (nil? channel) false (= "D04B4FE3E" channel)))))
+    (and 
+     (message? msg) 
+     (if (nil? channel) false (= "D04B4FE3E" channel)))))
+
+(defn- send[what]
+  (s/put! c (json/write-str (merge {:id (next-id)} what))))
 
 (defn- reply-with[channel,text]
-  (streams/put! c (json/write-str {:id 1 :type "message" :channel channel :text text}))
+  (send {:type "message" :channel channel :text text})
   (prn text))
 
 (defn- reply[to]
@@ -74,14 +80,21 @@
   (prn 'message! message)
   (reply (json/read-str message :key-fn keyword)))
 
-(defn start[] (streams/consume listen c))
+(defn start[] (s/consume listen c))
+
+(defn- now [] (new java.util.Date))
+
+(defn- ping[] ;; https://api.slack.com/rtm
+  (send { :type "ping" }))
 
 (defn -main
   [& args]
-  (println "Starting...")
+  (println "Starting Slack Poprock with args: " args)
   (start)
   (while true
-    (Thread/sleep 1000)))
+    (Thread/sleep (* 30 1000))
+    (ping)
+    (println "[" (str(now)) "] Connected?:" (if-not (s/closed? c) "YES" "NO"))))
 
 ;; Realtime API => https://api.slack.com/rtm
 ;; Emoticons -> http://www.emoji-cheat-sheet.com/
