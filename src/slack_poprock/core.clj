@@ -1,7 +1,8 @@
 (ns slack-poprock.core
   (:gen-class) 
   (:require [clojure.data.json :as json]
-            [manifold.stream :as s]))
+            [manifold.stream :as s]
+            [slack-poprock.slack :refer :all :as slack]))
 
 (require '[aleph.http :as http])
 (require '[clj-http.client :as client])
@@ -28,10 +29,12 @@
 
 (defn- slack-adapter[channel,text] (send {:type "message" :channel channel :text text}))
 
+(def slack-settings {:users (slack/users token)})
+
 (defn- listen[text]
   (let [msg (deserialize text)] 
     (i (format "<<< %s" msg))
-    (poprock/reply msg)))
+    (poprock/reply msg slack-settings)))
 
 (defn start[] 
   (poprock/log-with i)

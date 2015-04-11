@@ -63,9 +63,17 @@
      (message? msg) 
      (if (nil? channel) false (= "D04B4FE3E" channel)))))
 
-(defn reply[to]
-  (when (or (mentioned-me? to) (dm? to))
-    (@slack-say (:channel to) (rand-nth replies)))
+(defn reply[to settings]
+  (let [channel (:channel to)]
+    (when
+        (and 
+         (dm? to)
+         (= (:text to) "?"))
+      (let [user-list (map #(:name %) (:users settings))]
+        (@slack-say channel (format "Here are the people I know: %s" (clojure.string/join ", " user-list)))))
 
-  (when (mentioned-food? to)
-    (@slack-say (:channel to) (str "Did someone say " (which-food? to) "?"))))
+    (when (or (mentioned-me? to) (dm? to))
+      (@slack-say channel (rand-nth replies)))
+
+    (when (mentioned-food? to)
+      (@slack-say channel (str "Did someone say " (which-food? to) "?")))))
