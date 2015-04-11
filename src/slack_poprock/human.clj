@@ -32,7 +32,8 @@
     "Jimm-eh!"
     "Who's Rizz?"
     "Hudddddrrrrrrr"
-    "Joss-ette!"])
+    "Joss-ette!"
+    "Who writes your jokes?"])
 
 (def ^{:private true} user-name  "@U04B4FE2Y")
 (def ^{:private true} nick-names ["poppo" "rick" "p-rick" "ricky" "mark wigg"])
