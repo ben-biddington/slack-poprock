@@ -69,17 +69,23 @@
      (not (nil? channel)) 
      (= "D04B4FE3E" channel))))
 
+(def actions [
+ (fn[msg channel users]
+   (when
+      (and 
+        (dm? msg)
+        (= (:text msg) "?"))
+          (let [user-list (map #(:name %) users)]
+            (@slack-say channel (format "Thanks for asking, %s. Here are the people I know: %s" (from? msg users) (clojure.string/join ", " user-list))))))
+ 
+ (fn[msg channel users]
+   (when (or (mentioned-me? msg) (dm? msg))
+      (@slack-say channel (rand-nth replies))))
+
+ (fn[msg channel users]
+   (when (mentioned-food? msg)
+      (@slack-say channel (str "Did someone say " (which-food? msg) "?"))))])
+
 (defn reply[to settings]
   (let [channel (:channel to) users (:users settings)]
-    (when
-      (and 
-        (dm? to)
-        (= (:text to) "?"))
-          (let [user-list (map #(:name %) users)]
-            (@slack-say channel (format "Thanks for asking, %s. Here are the people I know: %s" (from? to users) (clojure.string/join ", " user-list)))))
-
-    (when (or (mentioned-me? to) (dm? to))
-      (@slack-say channel (rand-nth replies)))
-
-    (when (mentioned-food? to)
-      (@slack-say channel (str "Did someone say " (which-food? to) "?")))))
+    (first (filter (fn[f] (not (nil? (apply f [to channel users])))) actions)))) 
