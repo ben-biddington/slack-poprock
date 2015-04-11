@@ -13,7 +13,4 @@
     (let [users (slack/users token)]
       (is (some #(= "beans" (:name %)) users) "Expected to find a user called \"beans\""))))
 
-(deftest print-list-of-users-like-this
-  (testing "for example"
-    (let [users (slack/users token)]
-      (println (format "xxx %s" (clojure.string/join ", " (map #(:name %) users)))))))
+;; TEST: can ask who a message is from

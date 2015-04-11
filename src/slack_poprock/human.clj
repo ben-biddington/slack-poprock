@@ -56,21 +56,27 @@
 (defn- mentioned-food?[msg] (some #(mentioned? (:text msg) %) foods))
 
 (defn- which-food?[msg] (first (filter #(mentioned? (:text msg) %) foods)))
+(defn- first-match[fn coll] (first (filter fn coll)))
+
+(defn- from?[msg users]
+  (let [from (:user msg)]
+    (:name (first-match #(= from (:id %)) users))))
 
 (defn- dm?[msg]
   (let [channel (:channel msg)]
     (and 
      (message? msg) 
-     (if (nil? channel) false (= "D04B4FE3E" channel)))))
+     (not (nil? channel)) 
+     (= "D04B4FE3E" channel))))
 
 (defn reply[to settings]
-  (let [channel (:channel to)]
+  (let [channel (:channel to) users (:users settings)]
     (when
-        (and 
-         (dm? to)
-         (= (:text to) "?"))
-      (let [user-list (map #(:name %) (:users settings))]
-        (@slack-say channel (format "Here are the people I know: %s" (clojure.string/join ", " user-list)))))
+      (and 
+        (dm? to)
+        (= (:text to) "?"))
+          (let [user-list (map #(:name %) users)]
+            (@slack-say channel (format "Thanks for asking, %s. Here are the people I know: %s" (from? to users) (clojure.string/join ", " user-list)))))
 
     (when (or (mentioned-me? to) (dm? to))
       (@slack-say channel (rand-nth replies)))
