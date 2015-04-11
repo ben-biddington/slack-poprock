@@ -18,8 +18,9 @@
 (defn- slack-start-url[] (:url (slack-start-info)))
 (defn- connect-to[url] (aleph.http/websocket-client url))
 (def c @(connect-to (slack-start-url)))
-(def slack-channels (:channels (slack-start-info))) 
-(defn i[msg] (println (format "[%s] %s" (new java.util.Date) msg)))  
+(def slack-channels (:channels (slack-start-info)))
+(defn- now[] (new java.util.Date))
+(defn i[msg] (println (format "[%s] %s" (now) msg)))  
 
 (defn- send[what]
   (i (format ">>> %s" what))
@@ -38,8 +39,6 @@
   (s/consume listen c))
 
 (defn- ping[] (send { :type "ping" })) ;; https://api.slack.com/rtm
-
-;; (@reply-with (:channel to) (rand-nth replies))
 
 (defn -main 
   [& args]
