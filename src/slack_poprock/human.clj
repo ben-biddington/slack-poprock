@@ -43,7 +43,7 @@
 
 (def ^{:private true} user-name  "@U04B4FE2Y")
 (def ^{:private true} nick-names ["poppo" "rick" "p-rick" "ricky" "mark wigg"])
-(def ^{:private true} foods      ["chocolate" "licorice" "chipth" "icecream"])
+(def ^{:private true} foods      ["chocolate" "licorice" "chipth" "icecream" "chops" "steak"])
 
 (defn- mentioned-food?[msg] (message/mentioned-any? msg foods))
 (defn- which-food?[msg] (first (filter #(message/mentioned? (:text msg) %) foods)))
@@ -51,7 +51,7 @@
 (def actions [
  (fn[msg channel users]
    (when (mentioned-food? msg)
-      #(@slack-say channel (str "Did someone say " (which-food? msg) "? " (rand-nth eating)))))
+      #(@slack-say channel (str "Did someone say " (which-food? msg) "?"))))
 
  (fn[msg channel users]
    (when
