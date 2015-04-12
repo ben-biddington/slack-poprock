@@ -1,10 +1,10 @@
 (ns slack-poprock.human
-  (:require [clojure.data.json :as json]))
+  (:require [clojure.data.json :as json] [slack-poprock.message :as message]))
+
+(defn- s[what] (if (nil? what) "" what))
 
 (def ^{:private true} l (atom (fn[msg])))
-
 (def ^{:private true} in-memory-slack (fn [channel text] (@l (format "Sending <%s> to channel <%s>" text channel))))
-
 (def ^{:private true} slack-say (atom in-memory-slack))
 
 (defn reply-with [slack] (reset! slack-say slack))
@@ -37,37 +37,10 @@
 
 (def ^{:private true} user-name  "@U04B4FE2Y")
 (def ^{:private true} nick-names ["poppo" "rick" "p-rick" "ricky" "mark wigg"])
-(def ^{:private true} foods      ["chocolate" "licorice" "chipth"])
-(defn- s[what] (if (nil? what) "" what))
-(defn- message?[msg]
-  (let [type (:type msg)]
-    (= "message" (s type))))
+(def ^{:private true} foods      ["chocolate" "licorice" "chipth" "icecream"])
 
-(defn- mentioned?[text what]
-  (and 
-   (not (clojure.string/blank? text)) 
-   (.contains (.toLowerCase text) (.toLowerCase what))))
-
-(defn- mentioned-me?[msg]
-  (or
-   (mentioned? (:text msg) user-name) 
-   (some #(mentioned? (:text msg) %) nick-names)))
-
-(defn- mentioned-food?[msg] (some #(mentioned? (:text msg) %) foods))
-
-(defn- which-food?[msg] (first (filter #(mentioned? (:text msg) %) foods)))
-(defn- first-match[fn coll] (first (filter fn coll)))
-
-(defn- from?[msg users]
-  (let [from (:user msg)]
-    (:name (first-match #(= from (:id %)) users))))
-
-(defn- dm?[msg]
-  (let [channel (:channel msg)]
-    (and 
-     (message? msg) 
-     (not (nil? channel)) 
-     (= "D04B4FE3E" channel))))
+(defn- mentioned-food?[msg] (message/mentioned-any? msg foods))
+(defn- which-food?[msg] (first (filter #(message/mentioned? (:text msg) %) foods)))
 
 (def actions [
  (fn[msg channel users]
@@ -77,13 +50,13 @@
  (fn[msg channel users]
    (when
       (and 
-        (dm? msg)
+        (message/dm? msg)
         (= (:text msg) "?"))
           (let [user-list (map #(:name %) users)]
-            #(@slack-say channel (format "Thanks for asking, %s. Here are the people I know: %s" (from? msg users) (clojure.string/join ", " user-list))))))
+            #(@slack-say channel (format "Thanks for asking, %s. Here are the people I know: %s" (message/from? msg users) (clojure.string/join ", " user-list))))))
  
  (fn[msg channel users]
-   (when (or (mentioned-me? msg) (dm? msg))
+   (when (or (message/mentioned-me? msg user-name nick-names) (message/dm? msg))
       #(@slack-say channel (rand-nth replies))))])
 
 (defn- find-responder[msg channel users]
