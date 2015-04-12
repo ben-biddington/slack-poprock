@@ -10,6 +10,12 @@
 (defn reply-with [slack] (reset! slack-say slack))
 (defn log-with   [what]  (reset! l what) (println "Logging with: " @l))
 
+(def ^{:private true} eating 
+  [
+   "http://media.tumblr.com/c7bce9315211947694acd3c032fcce0e/tumblr_inline_nmmff8U3Vl1ryolh9_500.gif"
+   "http://c3.thejournal.ie/media/2014/04/bridesmaidsteeth.gif"
+   "http://media2.giphy.com/media/ydkFnkSB53wqs/giphy.gif"])
+
 (def ^{:private true} replies
   [
     "Heck Mandy!"
@@ -45,7 +51,7 @@
 (def actions [
  (fn[msg channel users]
    (when (mentioned-food? msg)
-      #(@slack-say channel (str "Did someone say " (which-food? msg) "?"))))
+      #(@slack-say channel (str "Did someone say " (which-food? msg) "? " (rand-nth eating)))))
 
  (fn[msg channel users]
    (when
