@@ -8,7 +8,7 @@
 (require '[clj-http.client :as client])
 (require '[slack-poprock.human :as poprock])
 
-(def token      (System/getenv "TOKEN")) ;; => https://trapslinger.slack.com/services/4345477538?icon=1
+(def token      (or (System/getenv "TOKEN") (slurp ".token"))) ;; => https://trapslinger.slack.com/services/4345477538?icon=1
 (def start-url  (str "https://slack.com/api/rtm.start?token=" token))
 
 (def current-message-id (atom 0))
