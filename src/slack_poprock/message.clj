@@ -12,12 +12,16 @@
 
 (defn mentioned-any?[msg of-these] (some #(mentioned? (:text msg) %) of-these))
 
-(defn dm?[msg]
+(defn dm?
+  " A channel that starts with 'D' is direct message. Public channels start with 'C'. First one below is DM:
+    [Tue Apr 14 13:14:23 NZST 2015] <<< {:type 'message', :channel 'D04B4FE3E', :user 'U04AUKBGT', :text '?'}
+    [Tue Apr 14 13:20:22 NZST 2015] <<< {:type 'user_typing', :channel 'C04A73LMW', :user 'U04AUKBGT'}"
+  [msg]
   (let [channel (:channel msg)]
     (and 
      (message? msg) 
      (not (nil? channel)) 
-     (= "D04B4FE3E" channel)))) ;; TODO: user id has to come out
+     (.startsWith channel "D"))))
 
 (defn from?[msg users]
   (let [from (:user msg)]
