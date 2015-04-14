@@ -34,7 +34,7 @@
 
 (defn- slack-adapter[channel,text] (send {:type "message" :channel channel :text text}))
 
-(def slack-settings {:users (slack/users token)})
+(def slack-settings { :users (slack/users token) :channels (slack/channels token) })
 
 (defn- listen[text]
   (let [msg (deserialize text)] 

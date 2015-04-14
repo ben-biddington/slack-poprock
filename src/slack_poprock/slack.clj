@@ -5,7 +5,7 @@
             [clj-http.client :as client]))
 
 (defrecord User    [name real-name id title])
-(defrecord Channel [name id])
+(defrecord Channel [name id creator-id])
 
 (defn- clean[text] (if (clojure.string/blank? text) "" text))
 
@@ -19,7 +19,8 @@
 (defn- to-channel [what] 
   (Channel. 
    (-> what :name clean) 
-   (-> what :id)))
+   (-> what :id)
+   (-> what :creator)))
 
 (defn- to-users    [what] (map to-user what))
 (defn- to-channels [what] (map to-channel what))

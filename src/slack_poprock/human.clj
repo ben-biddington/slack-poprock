@@ -47,31 +47,37 @@
 
 (defn- mentioned-food?[msg] (message/mentioned-any? msg foods))
 (defn- which-food?[msg] (first (filter #(message/mentioned? (:text msg) %) foods)))
+(defn- names[from] (map #(:name %) from))
 
 (def actions [
- (fn[msg channel users]
+ (fn[msg channel settings]
    (when (mentioned-food? msg)
       #(@slack-say channel (str "Did someone say " (which-food? msg) "?"))))
 
- (fn[msg channel users]
+ (fn[msg channel settings]
    (when
       (and 
         (message/dm? msg)
         (= (:text msg) "?"))
-          (let [user-list (map #(:name %) users)]
-            #(@slack-say channel (format "Thanks for asking, %s. Here are the people I know: %s" (message/from? msg users) (clojure.string/join ", " user-list))))))
+          (let [user-list (names (:users settings)) channel-list (names (:channels settings))]
+            #(@slack-say channel 
+              (format 
+               "Thanks for asking, %s. Here are the people I know: %s. And here are all of the channels: %s" 
+               (message/from? msg (:users settings)) 
+               (clojure.string/join ", " user-list)
+               (clojure.string/join ", " channel-list))))))
  
- (fn[msg channel users]
+ (fn[msg channel settings]
    (when (or (message/mentioned-me? msg user-name nick-names) (message/dm? msg))
       #(@slack-say channel (rand-nth replies))))])
 
-(defn- find-responder[msg channel users]
-  (let [the-function (first (filter (fn[f] (not (nil? (apply f [msg channel users])))) actions))]
+(defn- find-responder[msg channel settings]
+  (let [the-function (first (filter (fn[f] (not (nil? (apply f [msg channel settings])))) actions))]
     (when-not (nil? the-function)
-      (apply the-function [msg channel users]))))
+      (apply the-function [msg channel settings]))))
 
 (defn reply[to settings]
-  (let [channel (:channel to) users (:users settings)]
-    (let [r-fun (find-responder to channel users)]
+  (let [channel (:channel to)]
+    (let [r-fun (find-responder to channel settings)]
       (when-not (nil? r-fun)
         (apply r-fun []))))) 
