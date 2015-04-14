@@ -1,5 +1,6 @@
 (ns slack-poprock.core
   (:gen-class) 
+  (:refer-clojure :exclude [send])
   (:require [clojure.data.json :as json]
             [manifold.stream :as s]
             [slack-poprock.slack :refer :all :as slack]))
@@ -14,7 +15,10 @@
 (def current-message-id (atom 0))
 (defn- next-id[] (swap! current-message-id inc))
 (defn- deserialize[what] (json/read-str what :key-fn keyword))
-(defn- slack-start-info[] (deserialize (:body (client/get start-url))))
+(defn slack-start-info-raw[] 
+  (deserialize (:body (client/get start-url))))
+
+(def slack-start-info (memoize slack-start-info-raw))
 
 (defn- slack-start-url[] (:url (slack-start-info)))
 (defn- connect-to[url] (aleph.http/websocket-client url))
