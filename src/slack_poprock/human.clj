@@ -20,7 +20,7 @@
    "http://media2.giphy.com/media/ydkFnkSB53wqs/giphy.gif"])
 
 (def ^{:private true} replies
-  (-> ".replies.conf" slurp s/split-lines)
+  (atom (-> ".replies.conf" slurp s/split-lines))
 )
 
 (def ^{:private true} user-name  "@U04B4FE2Y")
@@ -51,7 +51,7 @@
  
  (fn[msg channel settings]
    (when (or (message/mentioned-me? msg user-name nick-names) (message/dm? msg))
-      #(@slack-say channel (rand-nth replies))))])
+      #(@slack-say channel (rand-nth @replies))))])
 
 (defn- find-responder[msg channel settings]
   (let [the-function (first (filter (fn[f] (not (nil? (apply f [msg channel settings])))) actions))]
