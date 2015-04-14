@@ -3,13 +3,14 @@
   (:refer-clojure :exclude [send])
   (:require [clojure.data.json :as json]
             [manifold.stream :as s]
-            [slack-poprock.slack :refer :all :as slack]))
+            [slack-poprock.slack :refer :all :as slack]
+            [slack-poprock.slack-token :refer :all :as t]))
 
 (require '[aleph.http :as http])
 (require '[clj-http.client :as client])
 (require '[slack-poprock.human :as poprock])
 
-(def token      (or (System/getenv "TOKEN") (slurp ".token"))) ;; => https://trapslinger.slack.com/services/4345477538?icon=1
+(def token      t/current)
 (def start-url  (str "https://slack.com/api/rtm.start?token=" token))
 
 (def current-message-id (atom 0))

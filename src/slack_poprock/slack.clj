@@ -4,9 +4,11 @@
             [aleph.http :as http]
             [clj-http.client :as client]))
 
-(defrecord User [name real-name id title])
+(defrecord User    [name real-name id title])
+(defrecord Channel [name id])
 
 (defn- clean[text] (if (clojure.string/blank? text) "" text))
+
 (defn- to-user [what] 
   (User. 
    (clean (:name what)) 
@@ -14,7 +16,13 @@
    (:id what) 
    (clean (-> what :profile :title))))
 
-(defn- to-users [what] (map to-user what))
+(defn- to-channel [what] 
+  (Channel. 
+   (clean (:name what)) 
+   (:id what)))
+
+(defn- to-users    [what] (map to-user what))
+(defn- to-channels [what] (map to-channel what))
 
 (defn- deserialize      [what]  (json/read-str what :key-fn keyword))
 
@@ -22,7 +30,6 @@
 (defn- slack-start-info [token] (deserialize (:body (client/get (start-url token)))))
 (defn- slack-start-url  [token] (:url (slack-start-info token)))
 
-(defn- settings         [token] (slack-start-info token))
+(defn- settings          [token] (slack-start-info token))
 (defn users             [token] (to-users (:users (settings token))))
-
-;;(defn connect-to[url] (aleph.http/websocket-client url))
+(defn channels          [token] (to-channels (:channels (settings token))))
