@@ -1,5 +1,8 @@
 (ns slack-poprock.human
-  (:require [clojure.data.json :as json] [slack-poprock.message :as message]))
+  (:require 
+   [clojure.string :as s :only [split-lines]] 
+   [clojure.data.json :as json] 
+   [slack-poprock.message :as message]))
 
 (defn- s[what] (if (nil? what) "" what))
 
@@ -17,29 +20,8 @@
    "http://media2.giphy.com/media/ydkFnkSB53wqs/giphy.gif"])
 
 (def ^{:private true} replies
-  [
-    "Heck Mandy!"
-    "Ma balls!"
-    "Timm-o!"
-    "You bet, bubba!"
-    "Mate! I've just had a shower!"
-    "Rotten dog! :dog:"
-    "Chuck it on the fire! :fire:"
-    "Who's farting? :boom:"
-    "Crikey dick!"
-    "Goh-lee!"
-    "Did you say arse lick?"
-    "Mol!"
-    "Tidy up! Come on!"
-    "How's your maths?"
-    "Col!"
-    "Bla bla bla, see you later guys"
-    "Baby baby baby, light my way"
-    "Jimm-eh!"
-    "Who's Rizz?"
-    "Hudddddrrrrrrr"
-    "Joss-ette!"
-    "Who writes your jokes?"])
+  (-> ".replies.conf" slurp s/split-lines)
+)
 
 (def ^{:private true} user-name  "@U04B4FE2Y")
 (def ^{:private true} nick-names ["poppo" "rick" "p-rick" "ricky" "mark wigg"])
