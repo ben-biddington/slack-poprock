@@ -11,15 +11,15 @@
 
 (defn- to-user [what] 
   (User. 
-   (clean (:name what)) 
-   (clean (:real_name what)) 
-   (:id what) 
-   (clean (-> what :profile :title))))
+   (-> what :name clean) 
+   (-> what :real_name clean) 
+   (-> what :id) 
+   (-> what :profile :title clean)))
 
 (defn- to-channel [what] 
   (Channel. 
-   (clean (:name what)) 
-   (:id what)))
+   (-> what :name clean) 
+   (-> what :id)))
 
 (defn- to-users    [what] (map to-user what))
 (defn- to-channels [what] (map to-channel what))
