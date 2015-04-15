@@ -2,7 +2,8 @@
   (:require 
    [clojure.string :as s :only [split-lines]] 
    [clojure.data.json :as json] 
-   [clojure-watch.core :as watch] 
+   [clojure-watch.core :as watch]
+   [slack-poprock.internal.personality :refer :all :as p]
    [slack-poprock.message :as message]))
 
 (defn- s[what] (if (nil? what) "" what))
@@ -19,26 +20,6 @@
    "http://media.tumblr.com/c7bce9315211947694acd3c032fcce0e/tumblr_inline_nmmff8U3Vl1ryolh9_500.gif"
    "http://c3.thejournal.ie/media/2014/04/bridesmaidsteeth.gif"
    "http://media2.giphy.com/media/ydkFnkSB53wqs/giphy.gif"])
-
-(def namespace-name (ns-name *ns*))
-(def config-file "/home/ben/sauce/slack-poprock/.replies.conf")
-(defn- load-replies[] (-> config-file slurp s/split-lines))
-(def replies-config-file (atom (load-replies)))
-(defn- start-watching []
-  "Automaticaly reloads replies when file changes"
-  (watch/start-watch [{
-    :path config-file
-    :event-types [:create :modify :delete]
-    :bootstrap (#(@l (format "[%s] Starting to watch <%s>" namespace-name  config-file)))
-    :callback (fn [event filename] (@l (format "[%s] Reloading <%s>" namespace-name filename)))
-    :options {:recursive true}}]))
-
-(def set-auto-load-on-once (memoize start-watching))
-(defn auto-reload[] 
-  (apply set-auto-load-on-once [])
-)
-
-(def ^{:private true} replies @replies-config-file)
 
 (def ^{:private true} user-name  "@U04B4FE2Y")
 (def ^{:private true} nick-names ["poppo" "rick" "p-rick" "ricky" "mark wigg"])
@@ -68,7 +49,7 @@
  
  (fn[msg channel settings]
    (when (or (message/mentioned-me? msg user-name nick-names) (message/dm? msg))
-      #(@slack-say channel (rand-nth replies))))])
+      #(@slack-say channel (rand-nth p/replies))))])
 
 (defn- find-responder[msg channel settings]
   (let [the-function (first (filter (fn[f] (not (nil? (apply f [msg channel settings])))) actions))]
@@ -76,7 +57,7 @@
       (apply the-function [msg channel settings]))))
 
 (defn reply[to settings]
-  (auto-reload)
+  (p/auto-reload)
   (let [channel (:channel to)]
     (let [r-fun (find-responder to channel settings)]
       (when-not (nil? r-fun)
