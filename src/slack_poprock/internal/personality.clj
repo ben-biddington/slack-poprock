@@ -24,5 +24,12 @@
 
 (defn auto-reload[] (apply set-auto-load-on-once []))
 
-(def replies @replies-config-file)
+(def last-few-replies (atom '()))
+
+(def ^{:private true} replies 
+  (let [all @replies-config-file last-few last-few-replies]
+    all
+    ))
+
+(defn retort[] (rand-nth replies))
 

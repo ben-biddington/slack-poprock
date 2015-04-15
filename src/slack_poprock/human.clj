@@ -49,7 +49,7 @@
  
  (fn[msg channel settings]
    (when (or (message/mentioned-me? msg user-name nick-names) (message/dm? msg))
-      #(@slack-say channel (rand-nth p/replies))))])
+      #(@slack-say channel (p/retort))))])
 
 (defn- find-responder[msg channel settings]
   (let [the-function (first (filter (fn[f] (not (nil? (apply f [msg channel settings])))) actions))]
