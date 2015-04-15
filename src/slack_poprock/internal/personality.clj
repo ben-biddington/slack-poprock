@@ -12,7 +12,7 @@
 (def ^{:private true} replies-config-file (atom (load-replies)))
 
 (defn- start-watching []
-  "Automaticaly reloads replies when file changes"
+  "Automaticaly reloads replies when file changes -- does not seem to work yet. @todo."
   (watch/start-watch [{
     :path config-file
     :event-types [:create :modify :delete]
