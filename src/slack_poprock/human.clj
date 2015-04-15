@@ -4,7 +4,8 @@
    [clojure.data.json :as json] 
    [clojure-watch.core :as watch]
    [slack-poprock.internal.personality :refer :all :as p]
-   [slack-poprock.message :as message]))
+   [slack-poprock.message :as message]
+   [slack-poprock.internal.log :as log :refer :all]))
 
 (defn- s[what] (if (nil? what) "" what))
 

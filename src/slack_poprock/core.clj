@@ -4,7 +4,8 @@
   (:require [clojure.data.json :as json]
             [manifold.stream :as s]
             [slack-poprock.slack :refer :all :as slack]
-            [slack-poprock.slack-token :refer :all :as t]))
+            [slack-poprock.slack-token :refer :all :as t]
+            [slack-poprock.internal.log :as log :refer :all]))
 
 (require '[aleph.http :as http])
 (require '[clj-http.client :as client])

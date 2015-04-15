@@ -3,12 +3,12 @@
    [clojure.string :as s :only [split-lines]] 
    [clojure.data.json :as json] 
    [clojure-watch.core :as watch] 
-   [slack-poprock.message :as message]))
+   [slack-poprock.message :as message]
+   [slack-poprock.internal.log :as log :refer :all]))
 
-(def ^{:private true} l (atom (fn[msg])))
 (def ^{:private true} namespace-name (ns-name *ns*))
-(def ^{:private true} config-file "/home/ben/sauce/slack-poprock/.replies.conf")
-(defn- load-replies[] (-> config-file slurp s/split-lines))
+(def ^{:private true} config-file ".replies.conf")
+(defn- load-replies[] (into [] (-> config-file slurp s/split-lines)))
 (def ^{:private true} replies-config-file (atom (load-replies)))
 
 (defn- start-watching []
@@ -16,20 +16,27 @@
   (watch/start-watch [{
     :path config-file
     :event-types [:create :modify :delete]
-    :bootstrap (#(@l (format "[%s] Starting to watch <%s>" namespace-name  config-file)))
-    :callback (fn [event filename] (@l (format "[%s] Reloading <%s>" namespace-name filename)))
+    :bootstrap (#(log/info (format "[%s] Starting to watch <%s>" namespace-name config-file)))
+    :callback (fn [event filename] (log/info (format "[%s] Reloading <%s>" namespace-name filename)))
     :options {:recursive true}}]))
 
 (def ^{:private true} set-auto-load-on-once (memoize start-watching))
 
 (defn auto-reload[] (apply set-auto-load-on-once []))
 
-(def last-few-replies (atom '()))
+(def ^{:private true} last-few-replies (atom #{})) 
 
-(def ^{:private true} replies 
-  (let [all @replies-config-file last-few last-few-replies]
-    all
-    ))
+(defn- record[what] (swap! last-few-replies (fn[old] (take 5 (conj old what))) ))
 
-(defn retort[] (rand-nth replies))
+(defn- ^{:private true} replies[]
+  (let [all @replies-config-file last-few @last-few-replies]
+    (let [pool (into '() (clojure.set/difference (into #{} all) last-few))]
+      (log/info (format "[%s] Using a pool of %s/%s replies" namespace-name (count pool) (count all)))
+      pool))) 
+
+(defn retort[] 
+  (let [reply (rand-nth (replies))]
+    (do
+      (record reply)
+      reply)))
 
