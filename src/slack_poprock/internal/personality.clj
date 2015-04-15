@@ -26,7 +26,7 @@
 
 (def ^{:private true} last-few-replies (atom #{})) 
 
-(defn- record[what] (swap! last-few-replies (fn[old] (take 5 (conj old what))) ))
+(defn- record[what] (swap! last-few-replies (fn[old] (take 10 (conj old what))) ))
 
 (defn- ^{:private true} replies[]
   (let [all @replies-config-file last-few @last-few-replies]
