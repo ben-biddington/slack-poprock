@@ -8,7 +8,8 @@
                  [clj-http "1.1.0"]
                  [org.clojure/data.json "0.2.6"]
                  [cheshire "5.4.0"]
-                 [clojure-watch "LATEST"]]
+                 [clojure-watch "LATEST"]
+                 [clj-time "0.9.0"]]
   :main ^:skip-aot slack-poprock.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

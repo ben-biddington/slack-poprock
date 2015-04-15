@@ -24,6 +24,6 @@
   (testing "that you can log simple messages"
     (log/info "example"))
   (testing "that you can log messages with more than one format specifier"
-    (log/info "example with a these two thngs: <%s> <%s>", "a" "b")))
+    (log/info "example with a these two things: <%s> <%s>", "a" "b")))
 
 

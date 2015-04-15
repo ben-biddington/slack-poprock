@@ -1,10 +1,13 @@
 (ns slack-poprock.internal.personality
+  (:refer-clojure :except [time])
   (:require 
    [clojure.string :as s :only [split-lines]] 
    [clojure.data.json :as json] 
-   [clojure-watch.core :as watch] 
+   [clojure-watch.core :as watch]
+   [clj-time.core :as t] 
    [slack-poprock.message :as message]
-   [slack-poprock.internal.log :as log :refer :all]))
+   [slack-poprock.internal.log :as log :refer :all]
+   [slack-poprock.internal.diagnostics :as diag :refer :all]))
 
 (def ^{:private true} namespace-name (ns-name *ns*))
 (def ^{:private true} config-file ".replies.conf")
@@ -35,8 +38,9 @@
       pool))) 
 
 (defn retort[] 
-  (let [reply (rand-nth (replies))]
+  (let [reply (diag/time #(rand-nth (replies)))]
     (do
-      (record reply)
-      reply)))
+      (record (:result reply))
+      (log/info "It took %sms to decide on a reply" (t/in-millis (:duration reply)))
+      (:result reply))))
 
