@@ -16,8 +16,8 @@
   (watch/start-watch [{
     :path config-file
     :event-types [:create :modify :delete]
-    :bootstrap (#(log/info (format "[%s] Starting to watch <%s>" namespace-name config-file)))
-    :callback (fn [event filename] (log/info (format "[%s] Reloading <%s>" namespace-name filename)))
+    :bootstrap (#(log/info "Starting to watch <%s>" config-file))
+    :callback (fn [event filename] (log/info "Reloading <%s>" filename))
     :options {:recursive true}}]))
 
 (def ^{:private true} set-auto-load-on-once (memoize start-watching))
@@ -31,7 +31,7 @@
 (defn- ^{:private true} replies[]
   (let [all @replies-config-file last-few @last-few-replies]
     (let [pool (into '() (clojure.set/difference (into #{} all) last-few))]
-      (log/info (format "[%s] Using a pool of %s/%s replies" namespace-name (count pool) (count all)))
+      (log/info "Using a pool of %d/%d replies" (count pool) (count all))
       pool))) 
 
 (defn retort[] 
