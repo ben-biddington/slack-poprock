@@ -34,7 +34,7 @@
 (defn- ^{:private true} replies[]
   (let [all @replies-config-file last-few @last-few-replies]
     (let [pool (into '() (clojure.set/difference (into #{} all) last-few))]
-      (log/info "Using a pool of %d/%d replies" (count pool) (count all))
+      (log/info "Using a pool of %d/%d replies (ignored these recent ones: <%s>)" (count pool) (count all) (clojure.string/join "," last-few))
       pool))) 
 
 (defn retort[] 

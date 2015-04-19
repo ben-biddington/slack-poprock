@@ -23,7 +23,7 @@
    "http://media2.giphy.com/media/ydkFnkSB53wqs/giphy.gif"])
 
 (def ^{:private true} user-name  "@U04B4FE2Y")
-(def ^{:private true} nick-names ["poppo" "rick" "p-rick" "ricky" "mark wigg"])
+(def ^{:private true} nick-names ["poppo" "rick" "p-rick" "ricky" "mark wigg" "rocky"])
 (def ^{:private true} foods      ["chocolate" "licorice" "chipth" "icecream" "chops" "steak"])
 
 (defn- mentioned-food?[msg] (message/mentioned-any? msg foods))
