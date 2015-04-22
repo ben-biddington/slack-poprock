@@ -1,5 +1,5 @@
 (ns slack-poprock.internal.diagnostics
-  (:refer-clojure :except [time])
+  (:refer-clojure :exclude [time])
   (:require [clj-time.core :as t]))
 
 (defn time[f & args]

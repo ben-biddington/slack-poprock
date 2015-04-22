@@ -1,5 +1,5 @@
 (ns slack-poprock.internal.personality
-  (:refer-clojure :except [time])
+  (:refer-clojure :exclude [time])
   (:require 
    [clojure.string :as s :only [split-lines]] 
    [clojure.data.json :as json] 
